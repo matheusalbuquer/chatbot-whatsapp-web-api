@@ -13,16 +13,14 @@ let qrCodeData = null;
 let clientStatus = "starting";
 const messages = [];
 
-// ===============================
-// WHATSAPP
-// ===============================
+const browserPath = puppeteer.executablePath();
+
+console.log("Chrome:", browserPath);
 
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    executablePath:
-      process.env.PUPPETEER_EXECUTABLE_PATH ||
-      "/opt/render/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome",
+    executablePath: browserPath,
     headless: true,
     args: [
       "--no-sandbox",
