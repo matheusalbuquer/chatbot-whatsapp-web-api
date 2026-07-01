@@ -21,20 +21,13 @@ const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     executablePath:
-      process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+      process.env.PUPPETEER_EXECUTABLE_PATH ||
+      "/opt/render/.cache/puppeteer/chrome/linux-146.0.7680.31/chrome-linux64/chrome",
     headless: true,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
-      "--disable-gpu",
-      "--disable-extensions",
-      "--disable-background-networking",
-      "--disable-sync",
-      "--metrics-recording-only",
-      "--mute-audio",
-      "--no-first-run",
-      "--no-zygote",
     ],
   },
 });
