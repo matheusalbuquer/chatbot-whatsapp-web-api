@@ -13,6 +13,10 @@ let qrCodeData = null;
 let clientStatus = "starting";
 const messages = [];
 
+// ===============================
+// WHATSAPP
+// ===============================
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
@@ -31,25 +35,42 @@ const client = new Client({
       "--mute-audio",
       "--no-first-run",
       "--no-zygote",
-      "--single-process",
     ],
   },
+});
+
+// ===============================
+// EVENTOS
+// ===============================
+
+client.on("loading_screen", (percent, message) => {
+  console.log(`Loading ${percent}% - ${message}`);
+});
+
+client.on("change_state", (state) => {
+  console.log("State:", state);
 });
 
 client.on("qr", async (qr) => {
   clientStatus = "waiting_qr";
   qrCodeData = await qrcode.toDataURL(qr);
-  console.log("QR Code gerado");
+
+  console.log("=================================");
+  console.log("QR CODE GERADO");
+  console.log("=================================");
+});
+
+client.on("authenticated", () => {
+  console.log("WhatsApp autenticado!");
 });
 
 client.on("ready", () => {
   clientStatus = "connected";
   qrCodeData = null;
-  console.log("WhatsApp conectado!");
-});
 
-client.on("authenticated", () => {
-  console.log("WhatsApp autenticado!");
+  console.log("=================================");
+  console.log("WHATSAPP CONECTADO");
+  console.log("=================================");
 });
 
 client.on("auth_failure", (msg) => {
@@ -76,9 +97,9 @@ client.on("message", (msg) => {
   }
 });
 
-// =======================
-// ENDPOINTS
-// =======================
+// ===============================
+// ROTAS
+// ===============================
 
 app.get("/", (req, res) => {
   res.json({
@@ -105,7 +126,7 @@ app.post("/send", async (req, res) => {
     if (clientStatus !== "connected") {
       return res.status(400).json({
         success: false,
-        error: "WhatsApp não conectado.",
+        error: "WhatsApp não conectado",
       });
     }
 
@@ -114,7 +135,7 @@ app.post("/send", async (req, res) => {
     if (!number || !message) {
       return res.status(400).json({
         success: false,
-        error: "Número e mensagem são obrigatórios.",
+        error: "Número e mensagem obrigatórios",
       });
     }
 
@@ -125,19 +146,19 @@ app.post("/send", async (req, res) => {
     res.json({
       success: true,
     });
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
 
     res.status(500).json({
       success: false,
-      error: error.message,
+      error: err.message,
     });
   }
 });
 
-// =======================
+// ===============================
 // SERVIDOR
-// =======================
+// ===============================
 
 const PORT = process.env.PORT || 3001;
 
@@ -145,10 +166,17 @@ app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
 
-// =======================
+// ===============================
 // INICIALIZAÇÃO
-// =======================
+// ===============================
 
-client.initialize().catch((err) => {
-  console.error("Erro ao iniciar WhatsApp:", err);
-});
+(async () => {
+  try {
+    console.log("Inicializando WhatsApp...");
+    await client.initialize();
+    console.log("initialize() finalizado.");
+  } catch (err) {
+    clientStatus = "error";
+    console.error("Erro ao iniciar WhatsApp:", err);
+  }
+})();
